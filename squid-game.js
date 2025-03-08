@@ -98,25 +98,25 @@ function generatePlayers(amount) {
 
 }
 
-function showDeaths(deadPlayers) {
+// function showDeaths(deadPlayers) {
 
-    console.log("---------------------------------DEATHS---------------------------------\n")
+//     console.log("---------------------------------DEATHS---------------------------------\n")
 
-    for (let i = 0; i < deadPlayers.length; i++) {
+//     for (let i = 0; i < deadPlayers.length; i++) {
 
-        const player = deadPlayers[i].player
-        const round = deadPlayers[i].roundKilled
-        const cause = deadPlayers[i].cause
+//         const player = deadPlayers[i].player
+//         const round = deadPlayers[i].roundKilled
+//         const cause = deadPlayers[i].cause
 
-        if (cause === "moved")
-            console.log(`Player ${player.number} was eliminated in round ${round}`)
-        else
-            console.log(`Player ${player.number} was eliminated for not reaching the finish line in time`)
-    }
+//         if (cause === "moved")
+//             console.log(`Player ${player.number} was eliminated in round ${round}`)
+//         else
+//             console.log(`Player ${player.number} was eliminated for not reaching the finish line in time`)
+//     }
 
-    console.log("\n------------------------------------------------------------------------")
+//     console.log("\n------------------------------------------------------------------------")
 
-}
+// }
 
 function redLightGreenLight(players) {
 
@@ -157,14 +157,32 @@ function redLightGreenLight(players) {
 
     }
 
+    function checkAvailableLines(player) {
+
+        for (let i = 0; i < players.length; i++) {
+
+            let otherPlayer = players[i]
+
+            if (otherPlayer === player || !otherPlayer.isAlive || playersData[otherPlayer.number].hasFinished) continue
+
+            let line = checkLineRecursively(otherPlayer)
+ 
+            if (line.length > 1 && !line.includes(player))
+                return true
+
+        }
+
+        return false
+
+    }
+
     for (let i = 0; i < players.length; i++) {
         let player = players[i]
-        if (!player.isAlive)
-            continue
+        if (!player.isAlive) continue
         playersData[player.number] = { walkSpeed: player.fitness / 10 + 0.6, distanceTraveled: 0, hasFinished: false, pushCooldown: 0, personInFront: false, personBehind: false }
     }
 
-    console.log("\n----------------------GREEN LIGHT!----------------------")
+    console.log("\n----------------------GREEN LIGHT!----------------------\n")
 
     for (timeLeft; timeLeft > 0; timeLeft--) {
         if (canMove && moveTimer > 0)
@@ -176,7 +194,7 @@ function redLightGreenLight(players) {
             console.log("\n-----------------------RED LIGHT!-----------------------\n")
         } else if (moveTimer === 6) {
             canMove = true
-            console.log("\n----------------------GREEN LIGHT!----------------------")
+            console.log("\n----------------------GREEN LIGHT!----------------------\n")
             round++
         }
 
@@ -213,7 +231,7 @@ function redLightGreenLight(players) {
                 if (Math.random() < 0.5 / 100 && !playerData.personInFront) {
                     player.kill()
                     deaths.push({ player: player, roundKilled: round, cause: "moved" })
-                    // console.log(`Player ${player.number} was eliminated!`)
+                    console.log(`Player ${player.number} was eliminated!`)
                 } else if ((player.desperation + player.hostility - player.empathy) / 6 > 0.5 && playerData.pushCooldown === 0 && playerData.distanceTraveled < totalDistance - 20) {
                     if (Math.random() < 1 / 100) {
 
@@ -245,14 +263,19 @@ function redLightGreenLight(players) {
                 playerData.distanceTraveled += playerData.personInFront && playerData.walkSpeed > playersData[playerData.personInFront.number].walkSpeed ? playersData[playerData.personInFront.number].walkSpeed : playerData.walkSpeed
                 if (playerData.distanceTraveled >= totalDistance) {
                     playerData.hasFinished = true
-                    // console.log(`Player ${player.number} has reached the finish line! (Time left: ${timeLeft})`)
+                    console.log(`Player ${player.number} has reached the finish line! (Time left: ${timeLeft})`)
                 }
                 if ((player.desperation + player.intellect) / 6 > 0.5 && !playerData.personInFront && playerData.distanceTraveled < totalDistance - 20) {
                     if (Math.random() < 1 / 100) {
+
+                        let playerLine = checkLineRecursively(player)
+
                         let playerToHideBehind;
+                        let joinLine = Math.random() < 1/4 && checkAvailableLines(player) ? true : false;
                         do {
                             playerToHideBehind = players[randomIntFromInterval(0, players.length - 1)]
-                        } while (playerToHideBehind === player || !playerToHideBehind.isAlive || playersData[playerToHideBehind.number].hasFinished)
+                            playerToHideBehind = checkLineRecursively(playerToHideBehind)[checkLineRecursively(playerToHideBehind).length-1]
+                        } while (playerToHideBehind === player || playerLine.includes(playerToHideBehind) || !playerToHideBehind.isAlive || playersData[playerToHideBehind.number].hasFinished || (joinLine && checkLineRecursively(playerToHideBehind).length < 2))
                         playerData.personInFront = playerToHideBehind
                         playersData[playerToHideBehind.number].personBehind = player
                         console.log(`Player ${player.number} is hiding behind player ${playerToHideBehind.number}!`)
@@ -279,8 +302,6 @@ function redLightGreenLight(players) {
         }
     }
 
-    // showDeaths(deaths)
-
 }
 
 function getDeathPercentage(players) {
@@ -299,8 +320,6 @@ function getDeathPercentage(players) {
 
 let playerList = generatePlayers(456)
 
-// console.log(playerList[342])
-
 redLightGreenLight(playerList)
 
-console.log(`\n${getDeathPercentage(playerList)}%`)
+console.log(`\n${getDeathPercentage(playerList)}% of players were eliminated!`)
