@@ -1,3 +1,7 @@
+const prompt = require("prompt-sync")({sigint: true})
+
+let language = "EN-US"
+
 function randomIntFromInterval(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -182,19 +186,22 @@ function redLightGreenLight(players) {
         playersData[player.number] = { walkSpeed: player.fitness / 10 + 0.6, distanceTraveled: 0, hasFinished: false, pushCooldown: 0, personInFront: false, personBehind: false }
     }
 
-    console.log("\n----------------------GREEN LIGHT!----------------------\n")
+    console.log(language === "EN-US" ? "\n----------------------GREEN LIGHT!----------------------\n" : "\n---------------------------------------------------------\n")
 
     for (timeLeft; timeLeft > 0; timeLeft--) {
+
         if (canMove && moveTimer > 0)
             moveTimer--
         else if (!canMove && moveTimer < 6)
             moveTimer++
         else if (moveTimer === 0) {
             canMove = false
-            console.log("\n-----------------------RED LIGHT!-----------------------\n")
+            console.log(language === "EN-US" ? "\n-----------------------RED LIGHT!-----------------------\n" : "\n-----------------BATATINHA FRITA, 1 2 3!-----------------\n")
         } else if (moveTimer === 6) {
+            prompt(language === "EN-US" ? "\n(Press Enter to continue!) " : "\n(Pressione Enter para continuar!) ")
+            console.clear()
             canMove = true
-            console.log("\n----------------------GREEN LIGHT!----------------------\n")
+            console.log(language === "EN-US" ? "\n----------------------GREEN LIGHT!----------------------\n" : "\n---------------------------------------------------------\n")
             round++
         }
 
@@ -209,11 +216,11 @@ function redLightGreenLight(players) {
             if (playerData.personInFront) {
 
                 if (!playerData.personInFront.isAlive) {
-                    console.log(`Since player ${playerData.personInFront.number} was eliminated, player ${player.number} isn't hiding behind anyone!`)
+                    console.log(language === "EN-US" ? `Since player ${playerData.personInFront.number} was eliminated, player ${player.number} isn't hiding behind anyone!` : `Já que o jogador ${playerData.personInFront.number} foi eliminado, o jogador ${player.number} não está mais se escondendo atrás de ninguém!`)
                     playersData[playerData.personInFront.number].personBehind = false
                     playerData.personInFront = false
                 } else if (playerData.distanceTraveled >= totalDistance - 20) {
-                    console.log(`Player ${player.number} has stopped hiding behind player ${playerData.personInFront.number}`)
+                    console.log(language === "EN-US" ? `Player ${player.number} has stopped hiding behind player ${playerData.personInFront.number}` : `O jogador ${player.number} não está mais se escondendo atrás do jogador ${playerData.personInFront.number}!`)
                     playersData[playerData.personInFront.number].personBehind = false
                     playerData.personInFront = false
                 }
@@ -231,7 +238,7 @@ function redLightGreenLight(players) {
                 if (Math.random() < 0.5 / 100 && !playerData.personInFront) {
                     player.kill()
                     deaths.push({ player: player, roundKilled: round, cause: "moved" })
-                    console.log(`Player ${player.number} was eliminated!`)
+                    console.log(language === "EN-US" ? `Player ${player.number} was eliminated!` : `O jogador ${player.number} foi eliminado!`)
                 } else if ((player.desperation + player.hostility - player.empathy) / 6 > 0.5 && playerData.pushCooldown === 0 && playerData.distanceTraveled < totalDistance - 20) {
                     if (Math.random() < 1 / 100) {
 
@@ -254,7 +261,7 @@ function redLightGreenLight(players) {
                             playerPushed = pushedLine[i]
                             playerPushed.kill()
                             deaths.push({ player: playerPushed, roundKilled: round, cause: "pushed" })
-                            console.log(`Player ${playerPushed.number} was eliminated! (Pushed by player ${player.number})`)
+                            console.log(language === "EN-US" ? `Player ${playerPushed.number} was eliminated! (Pushed by player ${player.number})` : `O jogador ${playerPushed.number} foi eliminado! (Empurrado pelo jogador ${player.number})`)
                         }
                         playerData.pushCooldown = 6
                     }
@@ -263,7 +270,7 @@ function redLightGreenLight(players) {
                 playerData.distanceTraveled += playerData.personInFront && playerData.walkSpeed > playersData[playerData.personInFront.number].walkSpeed ? playersData[playerData.personInFront.number].walkSpeed : playerData.walkSpeed
                 if (playerData.distanceTraveled >= totalDistance) {
                     playerData.hasFinished = true
-                    console.log(`Player ${player.number} has reached the finish line! (Time left: ${timeLeft})`)
+                    console.log(language === "EN-US" ? `Player ${player.number} has cleared the game! (Time left: ${timeLeft})` : `O jogador ${player.number} concluiu o jogo! (Tempo restante: ${timeLeft})`)
                 }
                 if ((player.desperation + player.intellect) / 6 > 0.5 && !playerData.personInFront && playerData.distanceTraveled < totalDistance - 20) {
                     if (Math.random() < 1 / 100) {
@@ -278,7 +285,7 @@ function redLightGreenLight(players) {
                         } while (playerToHideBehind === player || playerLine.includes(playerToHideBehind) || !playerToHideBehind.isAlive || playersData[playerToHideBehind.number].hasFinished || (joinLine && checkLineRecursively(playerToHideBehind).length < 2))
                         playerData.personInFront = playerToHideBehind
                         playersData[playerToHideBehind.number].personBehind = player
-                        console.log(`Player ${player.number} is hiding behind player ${playerToHideBehind.number}!`)
+                        console.log(language === "EN-US" ? `Player ${player.number} is hiding behind player ${playerToHideBehind.number}!` : `O jogador ${player.number} está se escondendo atrás do ${playerToHideBehind.number}!`)
                     }
                 }
             }
@@ -289,7 +296,7 @@ function redLightGreenLight(players) {
         }
     }
 
-    console.log("\n-----------------------RED LIGHT!-----------------------\n")
+    console.log(language === "EN-US" ? "\n-----------------------RED LIGHT!-----------------------\n" : "\n-----------------BATATINHA FRITA, 1 2 3!-----------------\n")
 
     for (let i = 0; i < players.length; i++) {
         let player = players[i]
@@ -298,28 +305,43 @@ function redLightGreenLight(players) {
         if (playersData[player.number].distanceTraveled < totalDistance) {
             player.kill()
             deaths.push({ player: player, roundKilled: null, cause: "time" })
-            console.log(`Player ${player.number} has died for not reaching on time!`)
+            console.log(language === "EN-US" ? `Player ${player.number} was eliminated for not clearing the game in time!` : `O jogador ${player.number} foi eliminado por não concluir o jogo a tempo!`)
         }
     }
 
 }
 
-function getDeathPercentage(players) {
+// function getDeathPercentage(players) {
 
-    let deadPlayers = 0
+//     let deadPlayers = 0
 
-    for (let i = 0; i < players.length; i++) {
-        let player = players[i]
-        if (!player.isAlive)
-            deadPlayers++
-    }
+//     for (let i = 0; i < players.length; i++) {
+//         let player = players[i]
+//         if (!player.isAlive)
+//             deadPlayers++
+//     }
 
-    return parseInt((deadPlayers / players.length) * 100)
+//     return parseInt((deadPlayers / players.length) * 100)
 
-}
+// }
 
-let playerList = generatePlayers(456)
+do {
+    console.clear()
+    language = prompt("Choose your language/Escolha seu idioma (EN-US/PT-BR): ").toUpperCase()
+} while (language !== "EN-US" && language !== "PT-BR")
+
+console.clear()
+
+let amount;
+do {
+    console.clear()
+    amount = parseInt(prompt(language === "EN-US" ? "Choose the initial amount of players: " : "Escolha a quantidade inicial de jogadores: "))
+} while (isNaN(amount) || amount <= 0)
+
+console.clear()
+
+let playerList = generatePlayers(amount)
 
 redLightGreenLight(playerList)
 
-console.log(`\n${getDeathPercentage(playerList)}% of players were eliminated!`)
+// console.log(`\n${getDeathPercentage(playerList)}% of players were eliminated!`)
