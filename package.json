@@ -1,6 +1,7 @@
 {
   "name": "squid-game.js",
   "dependencies": {
+    "console-clear": "^1.1.1",
     "prompt-sync": "^4.2.0"
   }
 }
